@@ -27,19 +27,19 @@ var tmpPath = path.join(__dirname, '..', 'tmp');
 var databases = [
 	{
 		type: 'country',
-		url: 'https://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip',
+		url: process.env.GEO_IP_COUNTRY || 'https://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip',
 		src: 'GeoIPCountryWhois.csv',
 		dest: 'geoip-country.dat'
 	},
 	{
 		type: 'country',
-		url: 'https://geolite.maxmind.com/download/geoip/database/GeoIPv6.csv.gz',
+		url: process.env.GEO_IP_V6 || 'https://geolite.maxmind.com/download/geoip/database/GeoIPv6.csv.gz',
 		src: 'GeoIPv6.csv',
 		dest: 'geoip-country6.dat'
 	},
 	{
 		type: 'city-extended',
-		url: 'https://geolite.maxmind.com/download/geoip/database/GeoLiteCity_CSV/GeoLiteCity-latest.zip',
+		url: process.env.GEO_LITE_CITY || 'https://geolite.maxmind.com/download/geoip/database/GeoLiteCity_CSV/GeoLiteCity-latest.zip',
 		src: [
 			'GeoLiteCity-Blocks.csv',
 			'GeoLiteCity-Location.csv'
@@ -48,10 +48,10 @@ var databases = [
 			'geoip-city.dat',
 			'geoip-city-names.dat'
 		]
-	},
+    },
 	{
 		type: 'city',
-		url: 'https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.csv.gz',
+		url: process.env.GEO_LITE_CITY_V6 || 'https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.csv.gz',
 		src: 'GeoLiteCityv6.csv',
 		dest: 'geoip-city6.dat'
 	}
@@ -86,10 +86,10 @@ function CSVtoArray(text) {
     return a;
 }
 
-function fetch(database, cb) {
+function fetch(database, cb, b_fileName) {
 
 	var downloadUrl = database.url;
-	var fileName = downloadUrl.split('/').pop();
+	var fileName = b_fileName || downloadUrl.split('?').shift().split('/').pop();
 	var gzip = path.extname(fileName) === '.gz';
 
 	if (gzip) {
@@ -126,6 +126,13 @@ function fetch(database, cb) {
 
 	function onResponse(response) {
 		var status = response.statusCode;
+
+        if (status === 302) {
+            var newUrl = response.headers.location;
+            console.log('WARNING'.yellow + ': HTTP Response status 302, redirecting to ' + newUrl);
+            database.url = newUrl;
+            return fetch(database, cb, fileName)
+        }
 
 		if (status !== 200) {
 			console.log('ERROR'.red + ': HTTP Request Failed [%d %s]', status, https.STATUS_CODES[status]);

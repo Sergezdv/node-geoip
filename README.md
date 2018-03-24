@@ -5,6 +5,27 @@ A native NodeJS API for the GeoLite data from MaxMind.
 
 This product includes GeoLite data created by MaxMind, available from http://maxmind.com/
 
+patch update
+------------
+
+Added the ability to set its own path (to the env variable) for downloading files
+
+/scripts/updatedb.js
+```javascript
+var databases = [
+    ...
+    url: process.env.GEO_IP_COUNTRY || 'https://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip',
+    
+    url: process.env.GEO_IP_V6 || 'https://geolite.maxmind.com/download/geoip/database/GeoIPv6.csv.gz',
+    
+    url: process.env.GEO_LITE_CITY || 'https://geolite.maxmind.com/download/geoip/database/GeoLiteCity_CSV/GeoLiteCity-latest.zip',
+    
+    url: process.env.GEO_LITE_CITY_V6 || 'https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.csv.gz', 
+    ...
+]
+
+```
+
 introduction
 ------------
 
